@@ -1,91 +1,46 @@
 #!/usr/bin/python3
-import sys
+from sys import argv
 import math
-import random
-import threading
+"""gets the first two factors of any number"""
 
 
-def gcd(a, b):
-    while b:
-        a, b = b, a % b
-    return a
-
-
-def algo_test2(n, k=200000):
-    if n == 1:
-        return (1, 1)
-    if n % 2 == 0:
-        return (2, n // 2)
-    x = random.randint(1, n - 1)
-    y = x
-    c = random.randint(1, n - 1)
-    g = 1
-    while g == 1:
-        x = ((x * x) % n + c) % n
-        y = ((y * y) % n + c) % n
-        y = ((y * y) % n + c) % n
-        g = gcd((x - y + n) % n, n)
-    if g == n:
-        for i in range(k):
-            x = ((x * x) % n + c) % n
-            y = ((y * y) % n + c) % n
-            y = ((y * y) % n + c) % n
-            g = gcd((x - y + n) % n, n)
-            if g > 1:
-                break
-    if g == n:
-        return None
-    return (g, n // g)
-
-
-def is_prime(n, k=500):
-    if n <= 1 or n == 4:
+def is_prime(num):
+    """checks if a number is prime"""
+    i = 3
+    if num % 2 == 0:
         return False
-    if n <= 3:
-        return True
-    d = n - 1
-    s = 0
-    while d % 2 == 0:
-        d >>= 1
-        s += 1
-    for _ in range(k):
-        a = random.randint(2, n - 2)
-        x = pow(a, d, n)
-        if x == 1 or x == n - 1:
-            continue
-        for _ in range(s - 1):
-            x = pow(x, 2, n)
-            if x == n - 1:
-                break
-        else:
+    while i * i <= num:
+        if num % i == 0:
             return False
+        i += 2
     return True
 
 
-def main():
-    if len(sys.argv) != 2:
-        print("Usage: factors.py <file>")
-        sys.exit(1)
-
-    try:
-        with open(sys.argv[1], 'r') as f:
-            for line in f:
-                n = int(line.strip())
-                if n < 2:
-                    continue
-                if is_prime(n):
-                    continue
-                factors = algo_test2(n)
-                if factors is None:
-                    continue
-                p, q = factors
-                if not (is_prime(p) and is_prime(q)):
-                    continue
-                print("{}={}*{}".format(n, p, q))
-    except IOError:
-        print("Error: Unable to open file {}".format(sys.argv[1]))
-        sys.exit(2)
+def factory(num):
+    """This factor function gets the factors of a number & prints them out"""
+    if num % 2 == 0:
+        i = 2
+        print("{}={}*{}".format(num, int(num/i), i))
+    else:
+        sq = math.sqrt(num)
+        if sq % 1 == 0:
+            print("{}={}*{}".format(num, sq, int(num/sq)))
+            return
+        sq = int(sq) + 1
+        for i in range(3, sq, +2):
+            if num % i == 0:
+                if is_prime(i):
+                    print("{}={}*{}".format(num, int(num/i), i))
+                    return
 
 
-if __name__ == '__main__':
-    main()
+def factors(filename):
+    """read_file"""
+    with open(filename, encoding="utf-8") as my_file:
+        for i in my_file.readlines():
+            n = int(i)
+            result = factory(n)
+
+
+if __name__ == "__main__":
+    factors(argv[1])
