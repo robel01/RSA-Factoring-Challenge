@@ -1,49 +1,59 @@
-#!/usr/bin/env bash
-# is a factors challenge
+#!/usr/bin/python3
+import random
+import sys
+import concurrent.futures
 
-check_factor()
-{
-	if [ $# -ne 3 ];
-        then
-                args=("$@")
-                count=0
-                num2=1
-                for a in ${args[*]};
-                do
-                        if [ $count -gt 1 ];
-                        then
-                                num2=$(echo $a*$num2 | bc)
-                        fi
-                        count=$((count + 1))
-                done
-        else
-                num2=$3
-        fi
 
-        num1=$2
-        num=$(echo "$1" | tr ':' '=')
+def gcd(a, b):
+    while b:
+        a, b = b, a % b
+    return a
 
-        result=$(echo "if($num2 > $num1) 1 else 0" | bc)
-	        if ((result == 1)); then
-		        numcp=$num1
-		        num1=$num2
-		        num2=$numcp
-                fi
 
-        echo "$num$num1*$num2"
-}
+def algo_test2(n, iterations=200000):
+    x = random.randint(0, n - 1)
+    y = x
+    c = random.randint(0, n - 1)
+    g = 1
+    for _ in range(iterations):
+        x = ((x * x) + c) % n
+        y = ((y * y) + c) % n
+        y = ((y * y) + c) % n
+        g = gcd(abs(x - y), n)
+        if g != 1:
+            break
+    if g == n:
+        return None
+    return g
 
-if [ $# -ne 1 ]
-then
-        echo 'Usage: factors <file>'
-        exit 1
-else
 
-        while read i
-        do
+def factorize_me(n):
+    for i in range(20):
+        factor = algo_test2(n)
+        if factor is not None:
+            print("{}={}*{}".format(n, factor, n // factor))
+            break
+    else:
+        if n % 2 == 0:
+            print("{}={}*{}".format(n, n // 2, 2))
+        else:
+            print("{}={}*{}".format(n, 1, n))
 
-                result=$(factor "$i")
-                check_factor $result
 
-        done < "$1"
-fi
+def main():
+    if len(sys.argv) != 2:
+        print("Usage: factors <file>")
+        sys.exit(1)
+
+    try:
+        with open(sys.argv[1], 'r') as f:
+            numbers = [int(line.strip()) for line in f]
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            executor.map(factorize_me, numbers)
+    except IOError:
+        print("Error: Unable to open file {}".format(sys.argv[1]))
+        sys.exit(2)
+
+
+if __name__ == '__main__':
+    main()
